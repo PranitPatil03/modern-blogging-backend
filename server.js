@@ -3,17 +3,22 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import cors from "cors";
-
-import User from "./Schema/User.js";
+import admin from "firebase-admin";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
+import serviceAccountKey from "./mordern-blogging-platfrom-firebase-adminsdk-et5e8-0590012c08.json" assert { type: "json" };
+import { getAuth } from "firebase-admin/auth";
+import User from "./Schema/User.js";
 
 const PORT = 3000;
 
 const app = express();
-
 app.use(express.json());
 app.use(cors());
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountKey),
+});
 
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
@@ -40,6 +45,10 @@ const generateUsername = async (email) => {
 
   return userName;
 };
+
+mongoose.connect(process.env.DB_LOCATION, {
+  autoIndex: true,
+});
 
 app.post("/signup", (req, res) => {
   const { fullName, email, password } = req.body;
@@ -109,8 +118,67 @@ app.post("/sign-in", (req, res) => {
     });
 });
 
-mongoose.connect(process.env.DB_LOCATION, {
-  autoIndex: true,
+app.post("/google-auth", async (req, res) => {
+  const { accessToken } = req.body;
+
+  console.log("accessToken ==> ", accessToken);
+
+  getAuth()
+    .verifyIdToken(accessToken)
+    .then(async (decodedUser) => {
+      const { email, name, picture } = decodedUser;
+
+      picture = picture.replace(" s96-c", "s384-c");
+
+      const user = await User.findOne({
+        "personal_info.email": email,
+      })
+        .select(
+          "personal_info.fullName personal_info.userName personal_info.profile_img google_auth"
+        )
+        .then((u) => {
+          return u || null;
+        })
+        .catch((err) => {
+          return res.status(500).json({ error: err.message });
+        });
+
+      if (user) {
+        if (!user.google_auth) {
+          return res
+            .status(403)
+            .json({ error: "This Email was signup without google" });
+        }
+      } else {
+        const userName = await generateUsername(email);
+
+        user = new User({
+          personal_info: {
+            fullName: name,
+            email,
+            profile_img: picture,
+            userName,
+          },
+          google_auth: true,
+        });
+
+        await user
+          .save()
+          .then((u) => {
+            user = u;
+          })
+          .catch((err) => {
+            return res.status(500).json({ error: err });
+          });
+      }
+
+      return res.status(200).json(formatDataToSend(user));
+    })
+    .catch((err) => {
+      return res
+        .status(500)
+        .json({ error: "Failed Try Again with different account1", err });
+    });
 });
 
 app.listen(PORT, () => {
