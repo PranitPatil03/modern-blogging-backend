@@ -1,14 +1,15 @@
-import express from "express";
-import mongoose from "mongoose";
 import "dotenv/config";
-import bcrypt from "bcrypt";
 import cors from "cors";
-import admin from "firebase-admin";
-import { nanoid } from "nanoid";
+import aws from "aws-sdk";
+import bcrypt from "bcrypt";
+import express from "express";
 import jwt from "jsonwebtoken";
-import serviceAccountKey from "./mordern-blogging-platfrom-firebase-adminsdk-et5e8-0590012c08.json" assert { type: "json" };
-import { getAuth } from "firebase-admin/auth";
+import mongoose from "mongoose";
+import { nanoid } from "nanoid";
+import admin from "firebase-admin";
 import User from "./Schema/User.js";
+import { getAuth } from "firebase-admin/auth";
+import serviceAccountKey from "./mordern-blogging-platfrom-firebase-adminsdk-et5e8-0590012c08.json" assert { type: "json" };
 
 const PORT = 3000;
 
@@ -22,6 +23,29 @@ admin.initializeApp({
 
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+
+mongoose.connect(process.env.DB_LOCATION, {
+  autoIndex: true,
+});
+
+const s3 = new aws.S3({
+  region: "ap-south-1",
+  accessKeyId: process.env.AWS_SECRET_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+});
+
+const generateUploadURL = async () => {
+  const date = new Date();
+
+  const ImageName = `${nanoid()}-${date.getTime()}.jpeg`;
+
+  return await s3.getSignedUrlPromise("putObject", {
+    Bucket: "modern-blogging-platform",
+    Key: ImageName,
+    Expires: 1000,
+    ContentType: "image/jpeg",
+  });
+};
 
 const formatDataToSend = (user) => {
   const accessToken = jwt.sign({ id: user._id }, process.env.SECRET_ACCESS_KEY);
@@ -45,10 +69,6 @@ const generateUsername = async (email) => {
 
   return userName;
 };
-
-mongoose.connect(process.env.DB_LOCATION, {
-  autoIndex: true,
-});
 
 app.post("/signup", (req, res) => {
   const { fullName, email, password } = req.body;
@@ -167,6 +187,16 @@ app.post("/google-auth", async (req, res) => {
       err: err.message,
     });
   }
+});
+
+app.get("/get-upload-url", (req, res) => {
+  generateUploadURL()
+    .then((url) => {
+      res.status(200).json({ uploadURL: url });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
 });
 
 app.listen(PORT, () => {
