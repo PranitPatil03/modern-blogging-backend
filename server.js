@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import admin from "firebase-admin";
 import User from "./Schema/User.js";
+import Blog from "./Schema/Blog.js";
 import { getAuth } from "firebase-admin/auth";
 import serviceAccountKey from "./mordern-blogging-platfrom-firebase-adminsdk-et5e8-0590012c08.json" assert { type: "json" };
 
@@ -33,6 +34,26 @@ const s3 = new aws.S3({
   accessKeyId: process.env.AWS_SECRET_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_KEY,
 });
+
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "No Access Token" });
+  }
+
+  jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+    if (err) {
+      console.log(err);
+      return res.status(403).json({ err: "Access Token is Invalid" });
+    }
+
+    req.user = user.id;
+    next();
+  });
+};
 
 const generateUploadURL = async () => {
   const date = new Date();
@@ -193,6 +214,87 @@ app.get("/get-upload-url", (req, res) => {
   generateUploadURL()
     .then((url) => {
       res.status(200).json({ uploadURL: url });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/create-blog", verifyJWT, (req, res) => {
+  const authorID = req.user;
+
+  let { title, description, banner, tags, content, draft } = req.body;
+
+  if (!title.length) {
+    return res
+      .status(403)
+      .json({ error: "You must Provide a title to publish the blog" });
+  }
+
+  if (!description.length || description.length > 200) {
+    return res.status(403).json({
+      error:
+        "You must Provide a description under 200 characters to publish the blog",
+    });
+  }
+
+  if (!banner.length) {
+    return res.status(403).json({
+      error: "You must Provide a banner to publish the blog",
+    });
+  }
+
+  if (!content.blocks.length) {
+    return res.status(403).json({
+      error: "You must Provide a content to the blog",
+    });
+  }
+
+  if (!tags.length || tags.length > 10) {
+    return res.status(403).json({
+      error: "You must Provide a tags to the blog",
+    });
+  }
+
+  tags = tags.map((tag) => tag.toLowerCase);
+
+  const blog_id =
+    title
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .replace(/[\s+]/g, "-")
+      .trim() + nanoid();
+
+  const blog = new Blog({
+    title,
+    description,
+    banner,
+    content,
+    tags,
+    author: authorID,
+    blog_id,
+    draft: Boolean(draft),
+  });
+
+  blog
+    .save()
+    .then((blog) => {
+      const incrementedValue = draft ? 0 : 1;
+
+      User.findOneAndUpdate(
+        { _id: authorID },
+        {
+          $inc: { "account_info.total_posts": incrementedValue },
+          $push: { blogs: blog._id },
+        }
+      )
+        .then((user) => {
+          return res.status(200).json({ id: blog.blog_id });
+        })
+        .catch((err) => {
+          return res
+            .status(500)
+            .json({ error: "Failed to update total blog posts" });
+        });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
