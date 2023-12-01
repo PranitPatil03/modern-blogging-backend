@@ -220,8 +220,49 @@ app.get("/get-upload-url", (req, res) => {
     });
 });
 
+app.get("/latest-blogs", (req, res) => {
+  const maxLimit = 5;
+
+  Blog.find({ draft: false })
+    .populate(
+      "author",
+      "personal_info.fullName personal_info.userName personal_info.profile_img -_id"
+    )
+    .sort({ publishedAt: -1 })
+    .select("blog_id title description banner activity tags publishedAt -_id")
+    .limit(maxLimit)
+    .then((blogs) => {
+      return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+app.get("/trending-blogs", (req, res) => {
+  Blog.find({ draft: false })
+    .populate(
+      "author",
+      "personal_info.fullName personal_info.userName personal_info.profile_img -_id"
+    )
+    .sort({
+      "activity.total_read": -1,
+      "activity.total_like": -1,
+      publishedAt: -1,
+    })
+    .select("blog_id title publishedAt -_id")
+    .limit(5)
+    .then((blogs) => {
+      return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
 app.post("/create-blog", verifyJWT, (req, res) => {
   const authorID = req.user;
+
+  console.log("REQ Body==>", req.body, "<==REQ Body");
 
   let { title, description, banner, tags, content, draft } = req.body;
 
@@ -258,7 +299,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
     }
   }
 
-  tags = tags.map((tag) => tag.toLowerCase);
+  tags = tags.map((tag) => tag.toLowerCase());
 
   const blog_id =
     title

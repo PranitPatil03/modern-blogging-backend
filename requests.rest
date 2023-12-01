@@ -7,16 +7,18 @@
 #     "password":"Demo123*"
 # }
 
-POST http://localhost:3000/create-blog
-Content-Type:application/json
-Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1Njg0ODAzNjE3NzEyOWQyMzBkMGUxYSIsImlhdCI6MTcwMTMzMjk5NX0.KtxUkA1gZUdD602H008AF1eFm9SXpYT1wZ8UIvdq8zA
+# POST http://localhost:3000/create-blog
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1Njg0ODAzNjE3NzEyOWQyMzBkMGUxYSIsImlhdCI6MTcwMTMzMjk5NX0.KtxUkA1gZUdD602H008AF1eFm9SXpYT1wZ8UIvdq8zA
 
-{
-    "title":"demo blog title",
-    "banner":"banner.png",
-    "description":"this is blog description",
-    "content":{
-        "blocks":[1,2]
-    },
-    "tags":["tag1","tag2"]
-}
+# {
+#     "title":"demo blog title",
+#     "banner":"banner.png",
+#     "description":"this is blog description",
+#     "content":{
+#         "blocks":[1,2]    
+#     },
+#     "tags":["tag1","tag2"]
+# }
+
+GET http://localhost:3000/trending-blogs
