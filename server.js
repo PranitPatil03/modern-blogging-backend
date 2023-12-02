@@ -344,6 +344,29 @@ app.post("/create-blog", verifyJWT, (req, res) => {
     });
 });
 
+app.post("/search-blogs", (req, res) => {
+  const { tag } = req.body;
+
+  const findQuery = { tags: tag, draft: false };
+
+  const maxLimit = 5;
+
+  Blog.find(findQuery)
+    .populate(
+      "author",
+      "personal_info.fullName personal_info.userName personal_info.profile_img -_id"
+    )
+    .sort({ publishedAt: -1 })
+    .select("blog_id title description banner activity tags publishedAt -_id")
+    .limit(maxLimit)
+    .then((blogs) => {
+      return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
 app.listen(PORT, () => {
   console.log("Server Running on Port -> " + PORT);
 });
