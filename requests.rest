@@ -25,5 +25,6 @@ POST http://localhost:3000/search-blogs
 Content-Type:application/json
 
 {
-    "tag":"Panamera"
+    "tag":"movie",
+    "page":1
 }

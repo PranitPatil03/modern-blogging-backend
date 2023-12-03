@@ -220,7 +220,9 @@ app.get("/get-upload-url", (req, res) => {
     });
 });
 
-app.get("/latest-blogs", (req, res) => {
+app.post("/latest-blogs", (req, res) => {
+  const { page } = req.body;
+
   const maxLimit = 5;
 
   Blog.find({ draft: false })
@@ -230,6 +232,7 @@ app.get("/latest-blogs", (req, res) => {
     )
     .sort({ publishedAt: -1 })
     .select("blog_id title description banner activity tags publishedAt -_id")
+    .skip((page - 1) * maxLimit)
     .limit(maxLimit)
     .then((blogs) => {
       return res.status(200).json({ blogs });
@@ -299,7 +302,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
     }
   }
 
-  tags = tags.map((tag) => tag.toLowerCase());
+  // tags = tags.map((tag) => tag.toLowerCase());
 
   const blog_id =
     title
@@ -345,11 +348,11 @@ app.post("/create-blog", verifyJWT, (req, res) => {
 });
 
 app.post("/search-blogs", (req, res) => {
-  const { tag } = req.body;
+  const { tag, page } = req.body;
 
   const findQuery = { tags: tag, draft: false };
 
-  const maxLimit = 5;
+  const maxLimit = 1;
 
   Blog.find(findQuery)
     .populate(
@@ -358,9 +361,34 @@ app.post("/search-blogs", (req, res) => {
     )
     .sort({ publishedAt: -1 })
     .select("blog_id title description banner activity tags publishedAt -_id")
+    .skip((page - 1) * maxLimit)
     .limit(maxLimit)
     .then((blogs) => {
       return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/all-latest-blogs-count", (req, res) => {
+  Blog.countDocuments({ draft: false })
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/search-blogs-count", (req, res) => {
+  let { tag } = req.body;
+
+  let findQuery = { tags: tag, draft: false };
+
+  Blog.countDocuments(findQuery)
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
