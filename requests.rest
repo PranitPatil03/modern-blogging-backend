@@ -21,10 +21,9 @@
 #     "tags":["tag1","tag2"]
 # }
 
-POST http://localhost:3000/search-blogs
+POST http://localhost:3000/search-users/
 Content-Type:application/json
 
 {
-    "tag":"movie",
-    "page":1
+    "query":"test"
 }

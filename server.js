@@ -348,11 +348,17 @@ app.post("/create-blog", verifyJWT, (req, res) => {
 });
 
 app.post("/search-blogs", (req, res) => {
-  const { tag, page } = req.body;
+  let { tag, page, query } = req.body;
 
-  const findQuery = { tags: tag, draft: false };
+  let findQuery;
 
-  const maxLimit = 1;
+  if (tag) {
+    findQuery = { tags: tag, draft: false };
+  } else if (query) {
+    findQuery = { draft: false, title: new RegExp(query, "i") };
+  }
+
+  const maxLimit = 2;
 
   Blog.find(findQuery)
     .populate(
@@ -382,9 +388,15 @@ app.post("/all-latest-blogs-count", (req, res) => {
 });
 
 app.post("/search-blogs-count", (req, res) => {
-  let { tag } = req.body;
+  const { tag, query } = req.body;
 
-  let findQuery = { tags: tag, draft: false };
+  let findQuery;
+
+  if (tag) {
+    findQuery = { tags: tag, draft: false };
+  } else if (query) {
+    findQuery = { draft: false, title: new RegExp(query, "i") };
+  }
 
   Blog.countDocuments(findQuery)
     .then((count) => {
@@ -392,6 +404,28 @@ app.post("/search-blogs-count", (req, res) => {
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/search-users", (req, res) => {
+  const { query } = req.body;
+
+  const findQuery = {
+    "personal_info.username": new RegExp(query, "i"),
+  };
+
+  User.find({
+    "personal_info.userName": new RegExp(query, "i"),
+  })
+    .limit(50)
+    .select(
+      "personal_info.fullName personal_info.userName personal_info.profile_img -_id"
+    )
+    .then((users) => {
+      return res.status(200).json({ users });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err });
     });
 });
 
