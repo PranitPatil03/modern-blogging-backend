@@ -429,6 +429,19 @@ app.post("/search-users", (req, res) => {
     });
 });
 
+app.post("/get-profile", (req, res) => {
+  const { userName } = req.body;
+
+  User.findOne({ "personal_info.userName": userName })
+    .select("-personal_info.password -google_auth -updatedAt -blogs")
+    .then((user) => {
+      return res.status(200).json(user);
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
 app.listen(PORT, () => {
   console.log("Server Running on Port -> " + PORT);
 });
