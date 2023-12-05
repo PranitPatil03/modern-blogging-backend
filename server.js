@@ -348,7 +348,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
 });
 
 app.post("/search-blogs", (req, res) => {
-  let { tag, page, query } = req.body;
+  let { tag, page, query, author } = req.body;
 
   let findQuery;
 
@@ -356,6 +356,8 @@ app.post("/search-blogs", (req, res) => {
     findQuery = { tags: tag, draft: false };
   } else if (query) {
     findQuery = { draft: false, title: new RegExp(query, "i") };
+  } else if (author) {
+    findQuery = { author, draft: false };
   }
 
   const maxLimit = 2;
@@ -388,7 +390,7 @@ app.post("/all-latest-blogs-count", (req, res) => {
 });
 
 app.post("/search-blogs-count", (req, res) => {
-  const { tag, query } = req.body;
+  const { tag, query, author } = req.body;
 
   let findQuery;
 
@@ -396,6 +398,8 @@ app.post("/search-blogs-count", (req, res) => {
     findQuery = { tags: tag, draft: false };
   } else if (query) {
     findQuery = { draft: false, title: new RegExp(query, "i") };
+  } else if (author) {
+    findQuery = { author, draft: false };
   }
 
   Blog.countDocuments(findQuery)
