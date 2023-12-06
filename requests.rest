@@ -21,9 +21,9 @@
 #     "tags":["tag1","tag2"]
 # }
 
-POST http://localhost:3000/get-profile
+POST http://localhost:3000/get-blog
 Content-Type:application/json
 
 {
-    "userName":"Test"
+    "blog_id":"4KeystoanUnforgettableCustomerExperienceh9sD1ABVQWM7Gl_72qE2H"
 }

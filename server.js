@@ -348,19 +348,19 @@ app.post("/create-blog", verifyJWT, (req, res) => {
 });
 
 app.post("/search-blogs", (req, res) => {
-  let { tag, page, query, author } = req.body;
+  let { tag, page, query, author, limit, eliminate_blog } = req.body;
 
   let findQuery;
 
   if (tag) {
-    findQuery = { tags: tag, draft: false };
+    findQuery = { tags: tag, draft: false, blog_id: { $ne: eliminate_blog } };
   } else if (query) {
     findQuery = { draft: false, title: new RegExp(query, "i") };
   } else if (author) {
     findQuery = { author, draft: false };
   }
 
-  const maxLimit = 2;
+  const maxLimit = limit ? limit : 2;
 
   Blog.find(findQuery)
     .populate(
@@ -440,6 +440,37 @@ app.post("/get-profile", (req, res) => {
     .select("-personal_info.password -google_auth -updatedAt -blogs")
     .then((user) => {
       return res.status(200).json(user);
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/get-blog", (req, res) => {
+  const { blog_id } = req.body;
+
+  const incrementedValue = 1;
+
+  Blog.findOneAndUpdate(
+    { blog_id },
+    { $inc: { "activity.total_reads": incrementedValue } }
+  )
+    .populate(
+      "author",
+      "personal_info.fullName personal_info.userName personal_info.profile_img"
+    )
+    .select(
+      "title description content banner activity publishedAt blog_id tags"
+    )
+    .then((blog) => {
+      User.findOneAndUpdate(
+        { "personal_info.userName": blog.author.personal_info.userName },
+        {
+          $inc: { "account_info.total_reads": incrementedValue },
+        }
+      );
+
+      return res.status(200).json({ blog });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
