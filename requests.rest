@@ -21,9 +21,9 @@
 #     "tags":["tag1","tag2"]
 # }
 
-POST http://localhost:3000/get-blog
+POST http://localhost:3000/like-blog
 Content-Type:application/json
 
 {
-    "blog_id":"4KeystoanUnforgettableCustomerExperienceh9sD1ABVQWM7Gl_72qE2H"
+    "blog_id":"15oftheBestMysteryThrillerBooksforAdultsJhXjqVMHSWHSX83qftwBP"
 }

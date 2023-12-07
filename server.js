@@ -9,6 +9,7 @@ import { nanoid } from "nanoid";
 import admin from "firebase-admin";
 import User from "./Schema/User.js";
 import Blog from "./Schema/Blog.js";
+import Notification from "./Schema/Notification.js";
 import { getAuth } from "firebase-admin/auth";
 import serviceAccountKey from "./mordern-blogging-platfrom-firebase-adminsdk-et5e8-0590012c08.json" assert { type: "json" };
 
@@ -487,6 +488,39 @@ app.post("/get-blog", (req, res) => {
       }
       console.log("BLOG==>", blog);
       return res.status(200).json({ blog });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/like-blog", verifyJWT, (req, res) => {
+  const user_id = req.user;
+
+  const { _id, isLikeByUser } = req.body;
+
+  const incrementedValue = !isLikeByUser ? 1 : -1;
+
+  Blog.findOneAndUpdate(
+    { _id },
+    {
+      $inc: { "activity.total_likes": incrementedValue },
+    }
+  )
+    .then((blog) => {
+      console.log("(*******BLOG BLOG******", Blog);
+      if (!isLikeByUser) {
+        let like = new Notification({
+          type: "like",
+          blog: _id,
+          notification_for: blog.author,
+          user: user_id,
+        });
+
+        like.save().then((notification) => {
+          return res.status(200).json({ like_by_user: true });
+        });
+      }
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
