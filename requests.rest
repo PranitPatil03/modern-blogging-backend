@@ -21,9 +21,17 @@
 #     "tags":["tag1","tag2"]
 # }
 
-POST http://localhost:3000/like-blog
+# POST http://localhost:3000/like-blog
+# Content-Type:application/json
+
+# {
+#     "blog_id":"15oftheBestMysteryThrillerBooksforAdultsJhXjqVMHSWHSX83qftwBP"
+# }
+
+POST http://localhost:3000/is-liked-by-user
 Content-Type:application/json
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1Njg0ODAzNjE3NzEyOWQyMzBkMGUxYSIsImlhdCI6MTcwMTMzMjk5NX0.KtxUkA1gZUdD602H008AF1eFm9SXpYT1wZ8UIvdq8zA
 
 {
-    "blog_id":"15oftheBestMysteryThrillerBooksforAdultsJhXjqVMHSWHSX83qftwBP"
+    "_id":"656c334fc438d63c11a654f7"
 }

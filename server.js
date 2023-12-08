@@ -508,7 +508,6 @@ app.post("/like-blog", verifyJWT, (req, res) => {
     }
   )
     .then((blog) => {
-      console.log("(*******BLOG BLOG******", Blog);
       if (!isLikeByUser) {
         let like = new Notification({
           type: "like",
@@ -518,9 +517,36 @@ app.post("/like-blog", verifyJWT, (req, res) => {
         });
 
         like.save().then((notification) => {
-          return res.status(200).json({ like_by_user: true });
+          return res.status(200).json({ like_by_user: true, notification });
         });
+      } else {
+        Notification.findOneAndDelete({
+          user: user_id,
+          type: "like",
+          blog: _id,
+        })
+          .then((data) => {
+            return res.status(200).json({ like_by_user: true, data });
+          })
+          .catch((err) => {
+            return res.status(500).json({ error: err.message });
+          });
       }
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/is-liked-by-user", verifyJWT, (req, res) => {
+  const { _id } = req.body;
+
+  const user_id = req.user;
+
+  Notification.exists({ user: user_id, type: "like", blog: _id })
+    .then((result) => {
+      console.log("Result", result);
+      return res.status(200).json({ result });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
