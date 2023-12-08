@@ -10,10 +10,11 @@ import admin from "firebase-admin";
 import User from "./Schema/User.js";
 import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
+import Comment from "./Schema/Comment.js";
 import { getAuth } from "firebase-admin/auth";
 import serviceAccountKey from "./mordern-blogging-platfrom-firebase-adminsdk-et5e8-0590012c08.json" assert { type: "json" };
 
-const PORT = 3000;
+const PORT = 4000;
 
 const app = express();
 app.use(express.json());
@@ -545,12 +546,66 @@ app.post("/is-liked-by-user", verifyJWT, (req, res) => {
 
   Notification.exists({ user: user_id, type: "like", blog: _id })
     .then((result) => {
-      console.log("Result", result);
       return res.status(200).json({ result });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
     });
+});
+
+app.post("/add-comment", verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let { _id, comment, blog_author } = req.body;
+
+  if (!comment.length) {
+    return res
+      .status(403)
+      .json({ error: "Write something to leave a comment" });
+  }
+
+  const commentObj = new Comment({
+    blog_id: _id,
+    blog_author,
+    comment,
+    commented_by: user_id,
+  });
+
+  commentObj.save().then((commentFile) => {
+    let { comment, commentAt, children } = commentFile;
+
+    Blog.findOneAndUpdate(
+      { _id },
+      {
+        $push: { comments: commentFile._id },
+        $inc: {
+          "activity.total_comments": 1,
+        },
+        "activity.total_parent_comments": 1,
+      }
+    ).then((blog) => {
+      console.log("New Comments Created");
+    });
+
+    let notificationObj = {
+      type: "comment",
+      blog: _id,
+      notification_for: blog_author,
+      user: user_id,
+      comment: commentFile._id,
+    };
+
+    new Notification(notificationObj).save().then((notification) => {
+      console.log("New Notification Created");
+    });
+
+    return res.status(200).json({
+      comment,
+      commentAt,
+      _id: commentFile._id,
+      user_id,
+      children,
+    });
+  });
 });
 
 app.listen(PORT, () => {
