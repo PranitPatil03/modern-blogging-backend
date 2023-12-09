@@ -579,8 +579,8 @@ app.post("/add-comment", verifyJWT, (req, res) => {
         $push: { comments: commentFile._id },
         $inc: {
           "activity.total_comments": 1,
+          "activity.total_parent_comments": 1,
         },
-        "activity.total_parent_comments": 1,
       }
     ).then((blog) => {
       console.log("New Comments Created");
@@ -606,6 +606,30 @@ app.post("/add-comment", verifyJWT, (req, res) => {
       children,
     });
   });
+});
+
+app.post("/get-blog-comments", (req, res) => {
+  const { blog_id, skip } = req.body;
+
+  const maxLimit = 5;
+
+  Comment.find({ blog_id, isReply: false })
+    .populate(
+      "commented_by",
+      "personal_info.fullName personal_info.userName personal_info.profile_img"
+    )
+    .skip(skip)
+    .limit(maxLimit)
+    .sort({
+      commentedAt: -1,
+    })
+    .then((comment) => {
+      return res.status(200).json(comment);
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({ error: err.message });
+    });
 });
 
 app.listen(PORT, () => {
