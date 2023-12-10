@@ -571,7 +571,7 @@ app.post("/add-comment", verifyJWT, (req, res) => {
   });
 
   commentObj.save().then((commentFile) => {
-    let { comment, commentAt, children } = commentFile;
+    let { comment, commentedAt, children } = commentFile;
 
     Blog.findOneAndUpdate(
       { _id },
@@ -600,7 +600,7 @@ app.post("/add-comment", verifyJWT, (req, res) => {
 
     return res.status(200).json({
       comment,
-      commentAt,
+      commentedAt,
       _id: commentFile._id,
       user_id,
       children,
