@@ -267,6 +267,8 @@ app.get("/trending-blogs", (req, res) => {
 app.post("/create-blog", verifyJWT, (req, res) => {
   const authorID = req.user;
 
+  console.log("authorID",authorID)
+
   console.log("REQ Body==>", req.body, "<==REQ Body");
 
   let { title, description, banner, tags, content, draft, id } = req.body;
@@ -326,6 +328,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
       });
   } else {
     const blog = new Blog({
+      author: authorID,
       title,
       description,
       banner,
@@ -336,7 +339,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
     });
 
     blog
-      .save()
+      .save() 
       .then((blog) => {
         const incrementedValue = draft ? 0 : 1;
 
@@ -487,7 +490,6 @@ app.post("/get-blog", (req, res) => {
       if (blog.draft && !draft) {
         return res.status(500).json({ error: err.message });
       }
-      console.log("BLOG==>", blog);
       return res.status(200).json({ blog });
     })
     .catch((err) => {
@@ -555,7 +557,7 @@ app.post("/is-liked-by-user", verifyJWT, (req, res) => {
 
 app.post("/add-comment", verifyJWT, (req, res) => {
   let user_id = req.user;
-  let { _id, comment, blog_author } = req.body;
+  let { _id, comment, blog_author, replying_to } = req.body;
 
   if (!comment.length) {
     return res
@@ -563,23 +565,28 @@ app.post("/add-comment", verifyJWT, (req, res) => {
       .json({ error: "Write something to leave a comment" });
   }
 
-  const commentObj = new Comment({
+  const commentObj = {
     blog_id: _id,
     blog_author,
     comment,
     commented_by: user_id,
-  });
+  };
 
-  commentObj.save().then((commentFile) => {
+  if (replying_to) {
+    commentObj.parent = replying_to;
+    commentObj.isReply=true
+  }
+
+  new Comment(commentObj).save().then(async (commentFile) => {
     let { comment, commentedAt, children } = commentFile;
 
     Blog.findOneAndUpdate(
       { _id },
       {
-        $push: { comments: commentFile._id },
+        $push: { "comments": commentFile._id },
         $inc: {
           "activity.total_comments": 1,
-          "activity.total_parent_comments": 1,
+          "activity.total_parent_comments": replying_to ? 0 : 1,
         },
       }
     ).then((blog) => {
@@ -587,12 +594,23 @@ app.post("/add-comment", verifyJWT, (req, res) => {
     });
 
     let notificationObj = {
-      type: "comment",
+      type: replying_to ? "reply" : "comment",
       blog: _id,
       notification_for: blog_author,
       user: user_id,
       comment: commentFile._id,
     };
+
+    if (replying_to) {
+      notificationObj.replied_on_comment = replying_to;
+
+      await Comment.findOneAndUpdate(
+        { _id: replying_to },
+        { $push: { children: commentFile._id } }
+      ).then((replyingToCommentDoc) => {
+        notificationObj.notification_for = replyingToCommentDoc.commented_by;
+      });
+    }
 
     new Notification(notificationObj).save().then((notification) => {
       console.log("New Notification Created");
@@ -628,6 +646,36 @@ app.post("/get-blog-comments", (req, res) => {
     })
     .catch((err) => {
       console.log(err);
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/get-replies", (req, res) => {
+  const { _id, skip } = req.body;
+
+  const maxLimit = 5;
+
+  Comment.findOne({ _id })
+    .populate({
+      path: "children",
+      option: {
+        limit: maxLimit,
+        skip: skip,
+        sort: { 'commentedAt': -1 },
+      },
+      populate: {
+        path: "commented_by",
+        select:
+          "personal_info.profile_img personal_info.userName personal_info.fullName",
+      },
+      select: "-blog_id -updatedAt",
+    })
+    .select("children")
+    .then((doc) => {
+      console.log("Line 671",doc.children)
+      return res.status(200).json({ replies: doc.children });
+    })
+    .catch((err) => {
       return res.status(500).json({ error: err.message });
     });
 });
