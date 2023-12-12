@@ -267,7 +267,7 @@ app.get("/trending-blogs", (req, res) => {
 app.post("/create-blog", verifyJWT, (req, res) => {
   const authorID = req.user;
 
-  console.log("authorID",authorID)
+  console.log("authorID", authorID);
 
   console.log("REQ Body==>", req.body, "<==REQ Body");
 
@@ -339,7 +339,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
     });
 
     blog
-      .save() 
+      .save()
       .then((blog) => {
         const incrementedValue = draft ? 0 : 1;
 
@@ -574,7 +574,7 @@ app.post("/add-comment", verifyJWT, (req, res) => {
 
   if (replying_to) {
     commentObj.parent = replying_to;
-    commentObj.isReply=true
+    commentObj.isReply = true;
   }
 
   new Comment(commentObj).save().then(async (commentFile) => {
@@ -583,7 +583,7 @@ app.post("/add-comment", verifyJWT, (req, res) => {
     Blog.findOneAndUpdate(
       { _id },
       {
-        $push: { "comments": commentFile._id },
+        $push: { comments: commentFile._id },
         $inc: {
           "activity.total_comments": 1,
           "activity.total_parent_comments": replying_to ? 0 : 1,
@@ -658,10 +658,10 @@ app.post("/get-replies", (req, res) => {
   Comment.findOne({ _id })
     .populate({
       path: "children",
-      option: {
+      options: {
         limit: maxLimit,
         skip: skip,
-        sort: { 'commentedAt': -1 },
+        sort: { commentedAt: -1 },
       },
       populate: {
         path: "commented_by",
@@ -672,12 +672,71 @@ app.post("/get-replies", (req, res) => {
     })
     .select("children")
     .then((doc) => {
-      console.log("Line 671",doc.children)
+      console.log("Line 671", doc.children);
       return res.status(200).json({ replies: doc.children });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
     });
+});
+
+const deleteComments = (_id) => {
+  Comment.findOneAndDelete({ _id })
+    .then((comment) => {
+      if (comment.parent) {
+        Comment.findOneAndUpdate(
+          { _id: comment.parent },
+          { $pull: { children: _id } }
+        ).then((comment) => {
+          console.log("Comment Deleted from Parent");
+        });
+      }
+
+      Notification.findOneAndDelete({ comment: _id }).then((notification) => {
+        console.log("Comment Notification Deleted");
+      });
+
+      Notification.findOneAndDelete({ reply: _id }).then((notification) => {
+        console.log("Comment Notification Deleted");
+      });
+
+      Blog.findOneAndUpdate(
+        { _id: comment.blog_id },
+        {
+          $pull: { comments: _id },
+          $inc: {
+            "activity.total_comments": -1,
+            "activity.total_parent_comments": comment.parent ? 0 : -1,
+          },
+        }
+      ).then((blog) => {
+        if (comment.children.length) {
+          comment.children.map((replies) => {
+            deleteComments(replies);
+          });
+        }
+      });
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+};
+
+app.post("/delete-comment", verifyJWT, (req, res) => {
+  const userId = req.user;
+
+  const { _id } = req.body;
+
+  console.log("Req Body", req);
+
+  Comment.findOne({ _id }).then((comment) => {
+    if (userId == comment.commented_by || userId == comment.blog_author) {
+      deleteComments(_id);
+      return res.status(200).json({ status: "Done" });
+    } else {
+      return res.status(403).json({ error: "You can not delete the comment" });
+    }
+  });
 });
 
 app.listen(PORT, () => {
