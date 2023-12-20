@@ -222,6 +222,54 @@ app.get("/get-upload-url", (req, res) => {
     });
 });
 
+app.post("/change-password", verifyJWT, (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (
+    !passwordRegex.test(newPassword) ||
+    !passwordRegex.test(currentPassword)
+  ) {
+    return res.status(403).json({ error: "Password is Invalid" });
+  }
+
+  User.findOne({ _id: req.user }).then((user) => {
+    if (user.google_auth) {
+      return res.status(403).json({
+        error: "You cant change Password because you logged using Google",
+      });
+    }
+
+    bcrypt.compare(
+      currentPassword,
+      user.personal_info.password,
+      (err, result) => {
+        if (err) {
+          return res
+            .status(500)
+            .json({ error: "Some Error occurred while changing the password" });
+        }
+
+        if (!result) {
+          return res.status(403).json({ error: "Incorrect Current Password" });
+        }
+
+        bcrypt.hash(newPassword, 10, (e, hashed_password) => {
+          User.findOneAndUpdate(
+            { _id: req.user },
+            { "personal_info.password": hashed_password }
+          )
+            .then((u) => {
+              return res.status(200).json({ status: "Password Changed" });
+            })
+            .catch((err) => {
+              return res.status(500).json({ error: err.message });
+            });
+        });
+      }
+    );
+  });
+});
+
 app.post("/latest-blogs", (req, res) => {
   const { page } = req.body;
 
