@@ -225,9 +225,6 @@ app.get("/get-upload-url", (req, res) => {
 app.post("/update-profile-img", verifyJWT, (req, res) => {
   const { updatedImgUrl } = req.body;
 
-  console.log(updatedImgUrl);
-
-  console.log(req.body);
   User.findOneAndUpdate(
     { _id: req.user },
     { "personal_info.profile_img": updatedImgUrl }
@@ -238,6 +235,62 @@ app.post("/update-profile-img", verifyJWT, (req, res) => {
         .json({ status: "Profile Image Updated", profile_img: updatedImgUrl });
     })
     .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/update-profile", verifyJWT, (req, res) => {
+  const { userName, bio, social_links } = req.body;
+
+  const bioLimit = 150;
+
+  if (userName.length < 3) {
+    return res
+      .status(403)
+      .json({ error: "UserName should be at least 3 characters long" });
+  }
+
+  if (bio.length > bioLimit) {
+    return res
+      .status(403)
+      .json({ error: `Bio should be more than ${bioLimit}` });
+  }
+
+  const socialLinksArr = Object.keys(social_links);
+
+  try {
+    for (let i = 0; i < socialLinksArr.length; i++) {
+      if (social_links[socialLinksArr[i]].length) {
+        const hostName = new URL(social_links[socialLinksArr[i]]).hostname;
+
+        if (
+          !hostName.includes(`${socialLinksArr[i]}.com`) &&
+          socialLinksArr[i] != "website"
+        ) {
+          return res.status(403).json({ error: "You must give correct URL" });
+        }
+      }
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err });
+  }
+
+  const UpdateObj = {
+    "personal_info.userName": userName,
+    "personal_info.bio": bio,
+    social_links,
+  };
+
+  User.findOneAndUpdate({ _id: req.user }, UpdateObj, {
+    runValidators: true,
+  })
+    .then(() => {
+      return res.status(200).json({userName});
+    })
+    .catch((err) => {
+      if (err.code == 11000) {
+        return res.status(409).json({ error: "userName is already taken" });
+      }
       return res.status(500).json({ error: err.message });
     });
 });
