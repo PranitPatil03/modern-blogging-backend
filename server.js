@@ -222,6 +222,26 @@ app.get("/get-upload-url", (req, res) => {
     });
 });
 
+app.post("/update-profile-img", verifyJWT, (req, res) => {
+  const { updatedImgUrl } = req.body;
+
+  console.log(updatedImgUrl);
+
+  console.log(req.body);
+  User.findOneAndUpdate(
+    { _id: req.user },
+    { "personal_info.profile_img": updatedImgUrl }
+  )
+    .then((u) => {
+      return res
+        .status(200)
+        .json({ status: "Profile Image Updated", profile_img: updatedImgUrl });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
 app.post("/change-password", verifyJWT, (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -245,11 +265,9 @@ app.post("/change-password", verifyJWT, (req, res) => {
         user.personal_info.password,
         (err, result) => {
           if (err) {
-            return res
-              .status(500)
-              .json({
-                error: "Some Error occurred while changing the password",
-              });
+            return res.status(500).json({
+              error: "Some Error occurred while changing the password",
+            });
           }
 
           if (!result) {
