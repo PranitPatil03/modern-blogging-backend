@@ -36,11 +36,21 @@
 #     "skip":0
 # }
 
-POST http://localhost:4000/update-profile-img
-Content-Type:application/json
-Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1N2NiNGY3ZDI2YTkzM2Y2M2JlNmEyNSIsImlhdCI6MTcwMzA2MTIxN30.bOt_R3ymgjD97L_c6dg1G8VMmC1pqjc_errKDqVb47o
+# POST http://localhost:4000/update-profile-img
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1N2NiNGY3ZDI2YTkzM2Y2M2JlNmEyNSIsImlhdCI6MTcwMzA2MTIxN30.bOt_R3ymgjD97L_c6dg1G8VMmC1pqjc_errKDqVb47o
 
 
-{
-    "updatedProfileImg":"https://modern-blogging-platform.s3.ap-south-1.amazonaws.com/w-702iSMaLX0aDC5LAqpO-1704370371075.jpeg"
-}
+# {
+#     "updatedProfileImg":"https://modern-blogging-platform.s3.ap-south-1.amazonaws.com/w-702iSMaLX0aDC5LAqpO-1704370371075.jpeg"
+# }
+
+
+# POST http://localhost:4000/all-notification-count
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1N2NiNGY3ZDI2YTkzM2Y2M2JlNmEyNSIsImlhdCI6MTcwMzA2MTIxN30.bOt_R3ymgjD97L_c6dg1G8VMmC1pqjc_errKDqVb47o
+
+
+# {
+#     "filter":"all"
+# }
