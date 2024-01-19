@@ -684,7 +684,7 @@ app.post("/is-liked-by-user", verifyJWT, (req, res) => {
 
 app.post("/add-comment", verifyJWT, (req, res) => {
   let user_id = req.user;
-  let { _id, comment, blog_author, replying_to } = req.body;
+  let { _id, comment, blog_author, replying_to, notification_id } = req.body;
 
   if (!comment.length) {
     return res
@@ -737,6 +737,19 @@ app.post("/add-comment", verifyJWT, (req, res) => {
       ).then((replyingToCommentDoc) => {
         notificationObj.notification_for = replyingToCommentDoc.commented_by;
       });
+
+      if (notification_id) {
+        Notification.findOneAndUpdate(
+          { _id: notification_id },
+          { reply: commentFile._id }
+        )
+          .then((notification) => {
+            console.log(notification);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     }
 
     new Notification(notificationObj).save().then((notification) => {
@@ -823,7 +836,10 @@ const deleteComments = (_id) => {
         console.log("Comment Notification Deleted");
       });
 
-      Notification.findOneAndDelete({ reply: _id }).then((notification) => {
+      Notification.findOneAndUpdate(
+        { reply: _id },
+        { $unset: { reply: 1 } }
+      ).then((notification) => {
         console.log("Comment Notification Deleted");
       });
 
@@ -857,7 +873,7 @@ app.post("/delete-comment", verifyJWT, (req, res) => {
   console.log("Req Body", req);
 
   Comment.findOne({ _id }).then((comment) => {
-    if (userId == comment.commented_by || userId == comment.blog_author) {
+    if (userId == comment?.commented_by || userId == comment?.blog_author) {
       deleteComments(_id);
       return res.status(200).json({ status: "Done" });
     } else {
@@ -945,7 +961,7 @@ app.post("/all-notifications-count", verifyJWT, (req, res) => {
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
-    }); 
+    });
 });
 
 app.listen(PORT, () => {
