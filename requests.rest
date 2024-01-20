@@ -45,12 +45,76 @@
 #     "updatedProfileImg":"https://modern-blogging-platform.s3.ap-south-1.amazonaws.com/w-702iSMaLX0aDC5LAqpO-1704370371075.jpeg"
 # }
 
-
-# POST http://localhost:4000/all-notification-count
+# POST http://localhost:4000/user-written-blogs
 # Content-Type:application/json
 # Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1N2NiNGY3ZDI2YTkzM2Y2M2JlNmEyNSIsImlhdCI6MTcwMzA2MTIxN30.bOt_R3ymgjD97L_c6dg1G8VMmC1pqjc_errKDqVb47o
 
 
 # {
-#     "filter":"all"
+#    "page":1,
+#    "draft":true
+# }
+
+# POST http://localhost:3000/signup
+# Content-Type: application/json
+
+# {
+#     "fullName":"demo",
+#     "email":"demo1@gmail.com",
+#     "password":"Demo123*"
+# }
+
+# POST http://localhost:3000/create-blog
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1Njg0ODAzNjE3NzEyOWQyMzBkMGUxYSIsImlhdCI6MTcwMTMzMjk5NX0.KtxUkA1gZUdD602H008AF1eFm9SXpYT1wZ8UIvdq8zA
+
+# {
+#     "title":"demo blog title",
+#     "banner":"banner.png",
+#     "description":"this is blog description",
+#     "content":{
+#         "blocks":[1,2]    
+#     },
+#     "tags":["tag1","tag2"]
+# }
+
+# POST http://localhost:3000/like-blog
+# Content-Type:application/json
+
+# {
+#     "blog_id":"15oftheBestMysteryThrillerBooksforAdultsJhXjqVMHSWHSX83qftwBP"
+# }
+
+# POST http://localhost:4000/get-replies
+# Content-Type:application/json
+
+# {
+#     "_id":"65757fb0894bb8da70d6d3bf",
+#     "skip":0
+# }
+
+# POST http://localhost:4000/update-profile-img
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1N2NiNGY3ZDI2YTkzM2Y2M2JlNmEyNSIsImlhdCI6MTcwMzA2MTIxN30.bOt_R3ymgjD97L_c6dg1G8VMmC1pqjc_errKDqVb47o
+
+
+# {
+#     "updatedProfileImg":"https://modern-blogging-platform.s3.ap-south-1.amazonaws.com/w-702iSMaLX0aDC5LAqpO-1704370371075.jpeg"
+# }
+
+POST http://localhost:4000/user-written-blogs
+Content-Type:application/json
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NzgxYjNmY2YwYzUyMmU2OGI5NmYwZCIsImlhdCI6MTcwNTc0NDg2Nn0.QKBlrJp7yBS7MHD8skrtfFiIVGk1_q6PD-IZNdCGxmg
+
+{
+   "page":1,
+   "draft":false
+}
+
+# POST http://localhost:4000/sign-in
+# Content-Type: application/json
+
+# {
+#     "email":"test@gmail.com",
+#     "password":"Pranit123*"
 # }

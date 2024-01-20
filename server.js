@@ -940,7 +940,7 @@ app.post("/notifications", verifyJWT, (req, res) => {
         .skip(skipDocs)
         .limit(maxLimit)
         .then((notification) => {
-          console.log("Notification has been seen",notification);
+          console.log("Notification has been seen", notification);
         });
       return res.status(200).json({ notifications });
     })
@@ -967,6 +967,46 @@ app.post("/all-notifications-count", verifyJWT, (req, res) => {
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/user-written-blogs", verifyJWT, (req, res) => {
+  const user_id = req.user;
+
+  let { page, draft, query, deletedDocCount } = req.body;
+
+  const maxLimit = 10;
+
+  const skipDocs = (page - 1) * maxLimit;
+
+  if (deletedDocCount) {
+    skipDocs -= deletedDocCount;
+  }
+
+  Blog.find({ author: user_id, draft, title: new RegExp(query, "i") })
+    .skip(skipDocs)
+    .limit(maxLimit)
+    .sort({ publishedAt: -1 })
+    .select("title banner publishedAt blog_id activity des draft -_id")
+    .then((blogs) => {
+      return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ err: err.message });
+    });
+});
+
+app.post("/user-written-blogs-count", verifyJWT, (req, res) => {
+  const user_id = req.user;
+
+  const { query, draft } = req.body;
+
+  Blog.countDocuments({ author: user_id, draft, title: new RegExp(query, "i") })
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
+    })
+    .catch((err) => {
+      return res.status(500).json({ err: err.message });
     });
 });
 
