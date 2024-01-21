@@ -975,7 +975,7 @@ app.post("/user-written-blogs", verifyJWT, (req, res) => {
 
   let { page, draft, query, deletedDocCount } = req.body;
 
-  const maxLimit = 10;
+  const maxLimit = 5;
 
   const skipDocs = (page - 1) * maxLimit;
 
@@ -1004,6 +1004,33 @@ app.post("/user-written-blogs-count", verifyJWT, (req, res) => {
   Blog.countDocuments({ author: user_id, draft, title: new RegExp(query, "i") })
     .then((count) => {
       return res.status(200).json({ totalDocs: count });
+    })
+    .catch((err) => {
+      return res.status(500).json({ err: err.message });
+    });
+});
+
+app.post("/delete-blog", verifyJWT, (req, res) => {
+  const user_id = req.user;
+
+  const { blog_id } = req.body;
+
+  Blog.findOneAndDelete({ blog_id })
+    .then((blog) => {
+      Notification.deleteMany({ blog: blog._id }).then((data) =>
+        console.log("Notification Deleted")
+      );
+
+      Comment.deleteMany({ blog_id: blog._id }).then((data) =>
+        console.log("Comments Deleted")
+      );
+
+      User.findOneAndUpdate(
+        { _id: user_id },
+        { $pull: { blog: blog._id }, $inc: { "account_info.total_posts": -1 } }
+      ).then((user) => console.log("Blog Deleted"));
+
+      return res.status(200).json({ status: "Done" });
     })
     .catch((err) => {
       return res.status(500).json({ err: err.message });
