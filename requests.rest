@@ -1,11 +1,4 @@
-# POST http://localhost:3000/signup
-# Content-Type: application/json
 
-# {
-#     "fullName":"demo",
-#     "email":"demo1@gmail.com",
-#     "password":"Demo123*"
-# }
 
 # POST http://localhost:3000/create-blog
 # Content-Type:application/json
@@ -102,14 +95,14 @@
 #     "updatedProfileImg":"https://modern-blogging-platform.s3.ap-south-1.amazonaws.com/w-702iSMaLX0aDC5LAqpO-1704370371075.jpeg"
 # }
 
-POST http://localhost:4000/user-written-blogs
-Content-Type:application/json
-Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NzgxYjNmY2YwYzUyMmU2OGI5NmYwZCIsImlhdCI6MTcwNTc0NDg2Nn0.QKBlrJp7yBS7MHD8skrtfFiIVGk1_q6PD-IZNdCGxmg
+# POST http://localhost:4000/user-written-blogs
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NzgxYjNmY2YwYzUyMmU2OGI5NmYwZCIsImlhdCI6MTcwNTc0NDg2Nn0.QKBlrJp7yBS7MHD8skrtfFiIVGk1_q6PD-IZNdCGxmg
 
-{
-   "page":1,
-   "draft":false
-}
+# {
+#    "page":1,
+#    "draft":false
+# }
 
 # POST http://localhost:4000/sign-in
 # Content-Type: application/json
@@ -118,3 +111,40 @@ Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1NzgxYjNmY2
 #     "email":"test@gmail.com",
 #     "password":"Pranit123*"
 # }
+
+# POST http://localhost:4000/auth/signup
+# Content-Type: application/json
+
+# {   "fullName":"demo",
+#     "email":"demo2@gmail.com",
+#     "password":"Demo123*"
+# }
+
+# POST http://localhost:4000/auth/sign-in
+# Content-Type: application/json
+
+# {  
+#     "email":"demo2@gmail.com",
+#     "password":"Demo123*"
+# }
+
+# GET http://localhost:4000/auth/get-upload-url
+# Content-Type: application/json
+
+
+# POST http://localhost:4000/update-profile-img
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YjhmNmJjYzNmYjY3ODkwMTNlNjQzNSIsImlhdCI6MTcwNjYyMDYyNn0._dPijJJU5fTKM6FyyAjgmuUDQQfqFBrEol1djDqFOFA
+
+# {
+#    "updatedImgUrl":"  https://modern-blogging-platform.s3.ap-south-1.amazonaws.com/UVNFKzW1SPj2LrMsHNMRH-1706620819755.jpeg?Content-Type=image%2Fjpeg&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIATNYBLWUUCMCACWMG%2F20240130%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20240130T132019Z&X-Amz-Expires=1000&X-Amz-Signature=a804daf93e8cf7675d58ddcc833c8e2691e113e508c7e282e00fc4b1241caa73&X-Amz-SignedHeaders=host"
+# }
+
+# POST http://localhost:4000/auth/change-password
+# Content-Type:application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YjhmNmJjYzNmYjY3ODkwMTNlNjQzNSIsImlhdCI6MTcwNjYyMDYyNn0._dPijJJU5fTKM6FyyAjgmuUDQQfqFBrEol1djDqFOFA
+
+# {
+#    "currentPassword":"Demo123*",
+#    "newPassword":"Ddemo12345*"
+# } 
