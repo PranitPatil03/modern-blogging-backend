@@ -1,7 +1,8 @@
+import { nanoid } from "nanoid";
 import Blog from "../model/Blog.js";
+import User from "../model/User.js";
 import Comment from "../model/Comment.js";
 import Notification from "../model/Notification.js";
-import User from "../model/User.js";
 
 export const LatestBlogs = (req, res) => {
   const { page } = req.body;

@@ -4,6 +4,7 @@ import {
   LatestBlogs,
   blogCount,
   createBlog,
+  deleteBlog,
   getBlog,
   likeBlog,
   searchBlogCount,
@@ -21,4 +22,5 @@ blogRouter
   .post("/all-latest-blogs-count", blogCount)
   .post("/search-blogs-count", searchBlogCount)
   .post("/get-blog", getBlog)
-  .post("/like-blog", likeBlog);
+  .post("/like-blog", likeBlog)
+  .post("/delete-blog", deleteBlog)

@@ -19,8 +19,8 @@ userRouter
   .post("/update-profile-img", verifyJWT, uploadProfileImg)
   .post("/update-profile", verifyJWT, updateProfile)
   .post("/change-password", verifyJWT, changePassword)
-  .post("/search-users", verifyJWT, searchUsers)
-  .post("/get-profile", verifyJWT, getProfile)
+  .post("/search-users", searchUsers)
+  .post("/get-profile", getProfile)
   .post("/is-liked-by-user", verifyJWT, isLikedByUser)
   .post("/user-written-blogs", verifyJWT, userWrittenBlogs)
   .post("/user-written-blogs-count", verifyJWT, userWrittenBlogsCount);

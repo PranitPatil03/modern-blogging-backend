@@ -1,7 +1,7 @@
 import Blog from "../model/Blog.js";
 import Comment from "../model/Comment.js";
 import Notification from "../model/Notification.js";
-import { deleteComments } from "../services/services";
+import { deleteComments } from "../services/services.js";
 
 export const addComment = (req, res) => {
   let user_id = req.user;

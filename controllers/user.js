@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import User from "../model/User.js";
-import { passwordRegex } from "../constants/constant.js";
+import { passwordRegex } from "../constants/contants.js";
 import { generateUploadURL } from "../services/services.js";
 import Notification from "../model/Notification.js";
 import Blog from "../model/Blog.js";

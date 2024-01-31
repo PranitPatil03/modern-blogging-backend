@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import User from "../model/User.js";
 import { getAuth } from "firebase-admin/auth";
-import { emailRegex, passwordRegex } from "../constants/constant.js";
+import { emailRegex, passwordRegex } from "../constants/contants.js";
 import { formatDataToSend, generateUsername } from "../services/services.js";
 
 export const createUser = (req, res) => {
