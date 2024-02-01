@@ -22,5 +22,5 @@ blogRouter
   .post("/all-latest-blogs-count", blogCount)
   .post("/search-blogs-count", searchBlogCount)
   .post("/get-blog", getBlog)
-  .post("/like-blog", likeBlog)
-  .post("/delete-blog", deleteBlog)
+  .post("/like-blog", verifyJWT,likeBlog)
+  .post("/delete-blog", verifyJWT,deleteBlog)
