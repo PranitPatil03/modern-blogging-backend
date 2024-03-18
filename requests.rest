@@ -148,3 +148,6 @@
 #    "currentPassword":"Demo123*",
 #    "newPassword":"Ddemo12345*"
 # } 
+
+GET http://localhost:4000/api/health
+Content-Type:application/json

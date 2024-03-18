@@ -30,6 +30,20 @@ app.use("/blog", blogRouter);
 app.use("/comment", commentRouter);
 app.use("/notifications", notificationRouter);
 
+app.get("/api/health", (req, res) => {
+  const healthCheck = {
+    uptime: process.uptime(),
+    message: "Sever is running!",
+    timestamp: Date.now(),
+  };
+  try {
+    res.send(healthCheck);
+  } catch (error) {
+    healthCheck.message = error;
+    res.status(503).send();
+  }
+});
+
 app.listen(PORT, () => {
   console.log("Server Running on Port -> " + PORT);
 });
